@@ -8,29 +8,21 @@
             border-width: 2px;
         }
 
-        span {
+        body {
             margin: 10px;
             font-size: 24px;
             font-family: monospace;
-            vertical-align: top;
-        }
-
-        div {
-            margin: 10px;
-            font-family: monospace;
-            font-size: 24px;
         }
 
         input {
-            font-size: 24px;
-            font-family: monospace;
-
+            font-family: inherit;
+            font-size: inherit;
         }
     </style>
 </head>
 <body>
 <div>BPM: <input type="text" id="bpm" value="174"/></div>
-<div style="height: 100px"><span>Time to wait:</span><span id="time"></span></div>
+<div style="height: 100px"><span>Time to wait:</span><span id="time" style="vertical-align: top"></span></div>
 <canvas id="field" width="500" height="367"></canvas>
 <br>
 <span>Speed of sound:</span><span>372.15 y/s</span> <br>
