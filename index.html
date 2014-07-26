@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Will Sherwood</title>
+    <style>
+        canvas {
+            border-style: solid;
+            border-width: 2px;
+        }
+
+        span {
+            margin: 10px;
+            font-size: 24px;
+            font-family: monospace;
+            vertical-align: top;
+        }
+
+        div {
+            margin: 10px;
+            font-family: monospace;
+            font-size: 24px;
+        }
+
+        input {
+            font-size: 24px;
+            font-family: monospace;
+
+        }
+    </style>
+</head>
+<body>
+<div>BPM: <input type="text" id="bpm" value="174"/></div>
+<div style="height: 100px"><span>Time to wait:</span><span id="time"></span></div>
+<canvas id="field" width="500" height="367"></canvas>
+<br>
+<span>Speed of sound:</span><span>372.15 y/s</span> <br>
+<span>5 pixels:</span><span>1 yard</span>
+
+<script type="text/javascript">
+
+    var notemap = new Array();
+    notemap[0] = {x: 0.125, y: "32nd.png"};
+    notemap[1] = {x: 0.1875, y: "d32nd.png"};
+    notemap[2] = {x: 0.25, y: "16th.png"};
+    notemap[3] = {x: 0.375, y: "d16th.png"};
+    notemap[4] = {x: 0.5, y: "8th.png"};
+    notemap[5] = {x: 0.75, y: "d8th.png"};
+    notemap[6] = {x: 1, y: "quarter.png"};
+    notemap[7] = {x: 1.5, y: "dquarter.png"};
+    notemap[8] = {x: 2, y: "half.png"};
+    notemap[9] = {x: 3, y: "dhalf.png"};
+    notemap[10] = {x: 4, y: "whole.png"};
+    notemap[11] = {x: 6, y: "dwhole.png"};
+
+    var g = document.querySelector("#field").getContext("2d");
+
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+    function draw(e) {
+        var pos = getMousePos(g.canvas, e);
+        if (pos.x < 0 || pos.y < 0 || pos.x > g.canvas.width || pos.y > g.canvas.height)
+            return;
+        var distance = dist(pos.x, pos.y, 500 / 2, 50 - 8 + 2.5) / 5;
+        g.strokeStyle = "#aaaaaa";
+        g.clearRect(0, 0, 500, 367);
+        setupField();
+        g.beginPath();
+        g.lineTo(pos.x, pos.y);
+        g.lineTo(500 / 2, 50 - 8 + 2.5);
+        g.closePath();
+        g.stroke();
+        g.strokeText(distance + " yards", 100, 40);
+        var bps = parseInt(document.querySelector("#bpm").value) / 60;
+        var beats = distance / 372.15 * bps;
+        var out = document.querySelector("#time");
+        while (out.hasChildNodes())
+            out.removeChild(out.lastChild);
+        var bool = true;
+        while (bool) {
+            for (var i = 11; i >= -1; i--) {
+                if (i == -1) {
+                    bool = false;
+                } else if (beats - notemap[i].x >= 0) {
+                    beats -= notemap[i].x;
+                    var p = document.createElement("img");
+                    if (notemap[i].y.charAt(notemap[i].y.length-1)=='g') {
+                        p.src = notemap[i].y;
+                    } else p.innerHTML = notemap[i].y;
+                    out.appendChild(p);
+                }
+            }
+        }
+        if (out.childNodes.length == 0) {
+            var p = document.createElement("a");
+            p.innerHTML = "negligible";
+            out.appendChild(p);
+        }
+    }
+
+
+    function dist(x1, y1, x2, y2) {
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }
+
+    document.addEventListener("mousemove", draw, false);
+
+    function setupField() {
+        g.strokeStyle = "#000000";
+        g.fillStyle = "#aaeeaa";
+        g.fillRect(0, 50, 500, 267);
+        g.fill();
+        g.fillStyle = "#eeaaaa";
+        g.fillRect(0, 0, 500, 50);
+        g.fillRect(0, 367 - 50, 500, 50);
+        for (var i = 1; i <= 10; i++) {
+            g.beginPath();
+            g.lineTo(i * 10 * 5, 50);
+            g.lineTo(i * 10 * 5, 367 - 50);
+            g.closePath();
+            g.stroke();
+            g.strokeText(i <= 5 ? i * 10 + "" : 100 - i * 10, i * 10 * 5 + 4, 367 / 2);
+        }
+        // front sideline
+        g.beginPath();
+        g.lineTo(0, 50);
+        g.lineTo(500, 50);
+        g.closePath();
+        g.stroke();
+        // back sideline
+        g.beginPath();
+        g.lineTo(0, 367 - 50);
+        g.lineTo(500, 367 - 50);
+        g.closePath();
+        g.stroke();
+        // front hash NCAA standard 640 inch
+        for (var i = 1; i <= 10; i++) {
+            g.beginPath();
+            g.lineTo(i * 10 * 5 - 5, 50 + 640 / 12 / 3 * 5);
+            g.lineTo(i * 10 * 5 + 5, 50 + 640 / 12 / 3 * 5);
+            g.closePath();
+            g.stroke();
+        }
+        // back hash NCAA standard 640 inch
+        for (var i = 1; i <= 10; i++) {
+            g.beginPath();
+            g.lineTo(i * 5 * 10 - 5, 367 - 50 - (640 / 12 / 3 * 5));
+            g.lineTo(i * 5 * 10 + 5, 367 - 50 - (640 / 12 / 3 * 5));
+            g.closePath();
+            g.stroke();
+        }
+        // drum major podium
+        g.rect(500 / 2 - 2.5, 50 - 8, 5, 5);
+        g.stroke();
+    }
+    setupField();
+</script>
+</body>
+</html>
