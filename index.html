@@ -82,7 +82,7 @@
                     beats -= notemap[i].x;
                     var p = document.createElement("img");
                     if (notemap[i].y.charAt(notemap[i].y.length-1)=='g') {
-                        p.src = notemap[i].y;
+                        p.src = "img/" + notemap[i].y;
                     } else p.innerHTML = notemap[i].y;
                     out.appendChild(p);
                 }
