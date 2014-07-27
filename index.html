@@ -21,7 +21,12 @@
     </style>
 </head>
 <body>
-<div>BPM: <input type="text" id="bpm" value="174"/></div>
+<div><span>BPM:<input type="text" id="bpm" value="174"/></span></div>
+<div><span>source of tempo:
+    <input id="light" type="radio" name="source" checked="checked"/>
+        <label for="light">Light</label>
+    <input id="sound" type="radio" value="Sound" name="source"/>
+        <label for="sound">Sound</label></span></div>
 <div style="height: 100px"><span>Time to wait:</span><span id="time" style="vertical-align: top"></span></div>
 <canvas id="field" width="500" height="367"></canvas>
 <br>
@@ -30,21 +35,23 @@
 
 <script type="text/javascript">
 
-    var notemap = new Array();
-    notemap[0] = {x: 0.125, y: "32nd.png"};
-    notemap[1] = {x: 0.1875, y: "d32nd.png"};
-    notemap[2] = {x: 0.25, y: "16th.png"};
-    notemap[3] = {x: 0.375, y: "d16th.png"};
-    notemap[4] = {x: 0.5, y: "8th.png"};
-    notemap[5] = {x: 0.75, y: "d8th.png"};
-    notemap[6] = {x: 1, y: "quarter.png"};
-    notemap[7] = {x: 1.5, y: "dquarter.png"};
-    notemap[8] = {x: 2, y: "half.png"};
-    notemap[9] = {x: 3, y: "dhalf.png"};
-    notemap[10] = {x: 4, y: "whole.png"};
-    notemap[11] = {x: 6, y: "dwhole.png"};
+    var noteMap = new Array();
+    noteMap[0] = {x: 0.125, y: "32nd.png"};
+    noteMap[1] = {x: 0.1875, y: "d32nd.png"};
+    noteMap[2] = {x: 0.25, y: "16th.png"};
+    noteMap[3] = {x: 0.375, y: "d16th.png"};
+    noteMap[4] = {x: 0.5, y: "8th.png"};
+    noteMap[5] = {x: 0.75, y: "d8th.png"};
+    noteMap[6] = {x: 1, y: "quarter.png"};
+    noteMap[7] = {x: 1.5, y: "dquarter.png"};
+    noteMap[8] = {x: 2, y: "half.png"};
+    noteMap[9] = {x: 3, y: "dhalf.png"};
+    noteMap[10] = {x: 4, y: "whole.png"};
+    noteMap[11] = {x: 6, y: "dwhole.png"};
 
     var g = document.querySelector("#field").getContext("2d");
+    var sourcex = 500 / 2;
+    var sourcey = 50 - 4;
 
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
@@ -54,17 +61,26 @@
         };
     }
 
+    function click(e) {
+        var pos = getMousePos(g.canvas, e);
+        if (pos.x < 0 || pos.y < 0 || pos.x > g.canvas.width || pos.y > g.canvas.height)
+            return;
+        sourcex = pos.x;
+        sourcey = pos.y;
+        draw(e);
+    }
+
     function draw(e) {
         var pos = getMousePos(g.canvas, e);
         if (pos.x < 0 || pos.y < 0 || pos.x > g.canvas.width || pos.y > g.canvas.height)
             return;
-        var distance = dist(pos.x, pos.y, 500 / 2, 50 - 8 + 2.5) / 5;
+        var distance = dist(pos.x, pos.y, sourcex, sourcey) / 5;
         g.strokeStyle = "#aaaaaa";
         g.clearRect(0, 0, 500, 367);
         setupField();
         g.beginPath();
         g.lineTo(pos.x, pos.y);
-        g.lineTo(500 / 2, 50 - 8 + 2.5);
+        g.lineTo(sourcex, sourcey);
         g.closePath();
         g.stroke();
         g.strokeText(distance + " yards", 100, 40);
@@ -74,16 +90,18 @@
         while (out.hasChildNodes())
             out.removeChild(out.lastChild);
         var bool = true;
+        if (document.querySelector("#sound").checked)
+            beats *= 2;
         while (bool) {
             for (var i = 11; i >= -1; i--) {
                 if (i == -1) {
                     bool = false;
-                } else if (beats - notemap[i].x >= 0) {
-                    beats -= notemap[i].x;
+                } else if (beats - noteMap[i].x >= 0) {
+                    beats -= noteMap[i].x;
                     var p = document.createElement("img");
-                    if (notemap[i].y.charAt(notemap[i].y.length-1)=='g') {
-                        p.src = "img/" + notemap[i].y;
-                    } else p.innerHTML = notemap[i].y;
+                    if (noteMap[i].y.charAt(noteMap[i].y.length - 1) == 'g') {
+                        p.src = "img/" + noteMap[i].y;
+                    } else p.innerHTML = noteMap[i].y;
                     out.appendChild(p);
                 }
             }
@@ -101,6 +119,7 @@
     }
 
     document.addEventListener("mousemove", draw, false);
+    document.addEventListener("click", click, false);
 
     function setupField() {
         g.strokeStyle = "#000000";
@@ -147,7 +166,7 @@
             g.stroke();
         }
         // drum major podium
-        g.rect(500 / 2 - 2.5, 50 - 8, 5, 5);
+        g.rect(sourcex - 2.5, sourcey - 2.5, 5, 5);
         g.stroke();
     }
     setupField();
